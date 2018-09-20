@@ -9,6 +9,7 @@ using Nop.Core;
 using Nop.Core.Data;
 using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Directory;
+using Nop.Core.Domain.Localization;
 using Nop.Core.Domain.Media;
 using Nop.Core.Domain.Messages;
 using Nop.Core.Domain.Shipping;
@@ -79,6 +80,11 @@ namespace Nop.Services.ExportImport
         private readonly IWorkContext _workContext;
         private readonly MediaSettings _mediaSettings;
         private readonly VendorSettings _vendorSettings;
+        private readonly ILocalizedEntityService _localizedEntityService;
+
+        LocalizedProperty ArName;
+        LocalizedProperty ArShortDescription;
+        LocalizedProperty ArFullDescription;
 
         #endregion
 
@@ -113,7 +119,8 @@ namespace Nop.Services.ExportImport
             IVendorService vendorService,
             IWorkContext workContext,
             MediaSettings mediaSettings,
-            VendorSettings vendorSettings)
+            VendorSettings vendorSettings,
+            ILocalizedEntityService localizedEntityService)
         {
             this._catalogSettings = catalogSettings;
             this._categoryService = categoryService;
@@ -145,6 +152,7 @@ namespace Nop.Services.ExportImport
             this._workContext = workContext;
             this._mediaSettings = mediaSettings;
             this._vendorSettings = vendorSettings;
+            this._localizedEntityService = localizedEntityService;
         }
 
         #endregion
@@ -1533,6 +1541,38 @@ namespace Nop.Services.ExportImport
                             case "Height":
                                 product.Height = property.DecimalValue;
                                 break;
+                                // read from excel new property with different language 
+                            case "ArName":
+                                
+                                var arname = property.StringValue;
+                                ArName = new LocalizedProperty();
+
+                                ArName.LanguageId = 2;
+                                ArName.LocaleKey = "Name";
+                                ArName.LocaleKeyGroup = "Product";
+                                ArName.LocaleValue = arname;
+                                break;
+                            case "ArShortDescription":
+                              
+                                var arshortdescription = property.StringValue;
+                                ArShortDescription = new LocalizedProperty();
+
+                                ArShortDescription.LanguageId = 2;
+                                ArShortDescription.LocaleKey = "ShortDescription";
+                                ArShortDescription.LocaleKeyGroup = "Product";
+                                ArShortDescription.LocaleValue = arshortdescription;
+                                break;
+                            case "ArFullDescription":
+                                
+                                var arfulldescription = property.StringValue;
+                                ArFullDescription = new LocalizedProperty();
+
+                                ArFullDescription.LanguageId = 2;
+                                ArFullDescription.LocaleKey = "FullDescription";
+                                ArFullDescription.LocaleKeyGroup = "Product";
+                                ArFullDescription.LocaleValue = arfulldescription;
+                                break;
+
                         }
                     }
 
@@ -1553,10 +1593,21 @@ namespace Nop.Services.ExportImport
                     if (isNew)
                     {
                         _productService.InsertProduct(product);
+                        // to add new  localize value  inside table of localize 
+                        _localizedEntityService.SaveLocalizedValue(product, x => x.Name, ArName.LocaleValue,2);
+                        _localizedEntityService.SaveLocalizedValue(product, x => x.ShortDescription, ArShortDescription.LocaleValue,2);
+                        _localizedEntityService.SaveLocalizedValue(product, x => x.FullDescription, ArFullDescription.LocaleValue,2);
+
+
                     }
                     else
                     {
                         _productService.UpdateProduct(product);
+                        // to update  localize value  inside table of localize 
+                        _localizedEntityService.SaveLocalizedValue(product, x => x.Name, ArName.LocaleValue, 2);
+                        _localizedEntityService.SaveLocalizedValue(product, x => x.ShortDescription, ArShortDescription.LocaleValue, 2);
+                        _localizedEntityService.SaveLocalizedValue(product, x => x.FullDescription, ArFullDescription.LocaleValue, 2);
+
                     }
 
                     //quantity change history

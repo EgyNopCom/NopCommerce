@@ -78,7 +78,7 @@ namespace Nop.Services.ExportImport
         private readonly IWorkContext _workContext;
         private readonly OrderSettings _orderSettings;
         private readonly ProductEditorSettings _productEditorSettings;
-
+        private readonly ILocalizedEntityService _localizedEntityService;
         #endregion
 
         #region Ctor
@@ -115,7 +115,8 @@ namespace Nop.Services.ExportImport
             IVendorService vendorService,
             IWorkContext workContext,
             OrderSettings orderSettings,
-            ProductEditorSettings productEditorSettings)
+            ProductEditorSettings productEditorSettings,
+            ILocalizedEntityService localizedEntityService)
         {
             this._addressSettings = addressSettings;
             this._catalogSettings = catalogSettings;
@@ -150,6 +151,7 @@ namespace Nop.Services.ExportImport
             this._workContext = workContext;
             this._orderSettings = orderSettings;
             this._productEditorSettings = productEditorSettings;
+            this._localizedEntityService = localizedEntityService;
         }
 
         #endregion
@@ -1283,6 +1285,11 @@ namespace Nop.Services.ExportImport
                 new PropertyByName<Product>("Categories", GetCategories),
                 new PropertyByName<Product>("Manufacturers", GetManufacturers, IgnoreExportPoductProperty(p => p.Manufacturers)),
                 new PropertyByName<Product>("ProductTags", GetProductTags, IgnoreExportPoductProperty(p => p.ProductTags)),
+                // add new three property for arabic language with id=2
+                new PropertyByName<Product>("ArName",p=>_localizedEntityService.GetLocalizedValue(2, p.Id,"Product","Name")),
+                new PropertyByName<Product>("ArShortDescription",p=>_localizedEntityService.GetLocalizedValue(2, p.Id,"Product","ShortDescription")),
+                new PropertyByName<Product>("ArFullDescription",p=>_localizedEntityService.GetLocalizedValue(2, p.Id,"Product","FullDescription")),
+
                 new PropertyByName<Product>("Picture1", p => GetPictures(p)[0]),
                 new PropertyByName<Product>("Picture2", p => GetPictures(p)[1]),
                 new PropertyByName<Product>("Picture3", p => GetPictures(p)[2])
